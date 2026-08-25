@@ -17,6 +17,18 @@ if (!PAYMENT_WALLET || PAYMENT_WALLET.includes("YourBaseWalletAddressHere")) {
   );
 }
 
+// --- Public x402 discovery endpoint -----------------------------------------
+// Listed in the x402 Bazaar so agents can discover this resource programmatically.
+// No payment required — plain Express route placed BEFORE the payment middleware.
+app.get("/.well-known/x402", (_req, res) => {
+  res.json({
+    version: 1,
+    resources: [
+      "https://crypto-risk-api-jw3l.onrender.com/api/v1/risk-score"
+    ]
+  });
+});
+
 // --- Real x402 payment gate -------------------------------------------------
 // This middleware (not a hand-rolled header check) actually:
 //   1. Returns HTTP 402 with signed payment requirements if no payment is attached
