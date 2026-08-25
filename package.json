@@ -1,0 +1,22 @@
+{
+  "name": "crypto-risk-api",
+  "version": "1.0.0",
+  "description": "x402-metered Token Risk & Whale Concentration API for AI trading agents",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "mcp": "node mcp/server.js"
+  },
+  "dependencies": {
+    "@coinbase/x402": "^2.1.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "x402-express": "^1.2.0"
+  },
+  "optionalDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
