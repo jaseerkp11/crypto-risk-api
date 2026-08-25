@@ -1,7 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
-import { paymentMiddleware } from "x402-express";
-import { facilitator } from "@coinbase/x402";
+import { paymentMiddleware } from "@x402/express";
+import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { createCdpAuthHeaders } from "@coinbase/x402";
 import { analyzeToken } from "./riskEngine.js";
 
 dotenv.config();
@@ -10,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PAYMENT_WALLET = process.env.PAYMENT_WALLET;
 const NETWORK = process.env.X402_NETWORK || "base-sepolia";
+const CAIP2_NETWORK = NETWORK === "base" ? "eip155:8453" : "eip155:84532";
 
 if (!PAYMENT_WALLET || PAYMENT_WALLET.includes("YourBaseWalletAddressHere")) {
   console.warn(
@@ -70,31 +73,45 @@ app.get("/openapi.json", (_req, res) => {
   });
 });
 
-// --- Real x402 payment gate -------------------------------------------------
+// --- Real x402 payment gate (v2) ---------------------------------------------
 // This middleware (not a hand-rolled header check) actually:
 //   1. Returns HTTP 402 with signed payment requirements if no payment is attached
 //   2. Sends the client's payment payload to the facilitator to VERIFY it on-chain
 //   3. Settles the payment (moves the USDC to PAYMENT_WALLET) before your route runs
 // If verification fails, the middleware short-circuits with an error response —
 // your route handler below only ever runs for a genuinely paid request.
+const createAuthHeaders = createCdpAuthHeaders();
+
+const facilitatorClient = NETWORK === "base"
+  ? new HTTPFacilitatorClient({
+      url: "https://api.cdp.coinbase.com/platform/v2/x402",
+      createAuthHeaders: createAuthHeaders,
+    })
+  : new HTTPFacilitatorClient({
+      url: "https://x402.org/facilitator",
+    });
+
+const x402Server = new x402ResourceServer(facilitatorClient);
+x402Server.register("eip155:*", new ExactEvmScheme());
+
 app.use(
   paymentMiddleware(
-    PAYMENT_WALLET,
     {
-      "/api/v1/risk-score": {
-        price: "$0.002",
-        network: NETWORK, // "base-sepolia" for testing, "base" for real USDC
-        config: {
-          description:
-            "Real-time token risk score, whale concentration, and honeypot check",
-        },
+      "GET /api/v1/risk-score": {
+        accepts: [
+          {
+            scheme: "exact",
+            payTo: PAYMENT_WALLET,
+            price: "$0.002",
+            network: CAIP2_NETWORK,
+          },
+        ],
+        description:
+          "Real-time token risk score, whale concentration, and honeypot check",
+        mimeType: "application/json",
       },
     },
-    // Use the default public facilitator (https://x402.org/facilitator).
-    // This works for base-sepolia testnet without CDP API keys.
-    // When you switch to mainnet (X402_NETWORK=base), import the CDP
-    // facilitator from @coinbase/x402 and set CDP_API_KEY_ID/SECRET in .env.
-       NETWORK === "base" ? facilitator : undefined
+    x402Server
   )
 );
 
