@@ -9,6 +9,7 @@ import { analyzeToken } from "./riskEngine.js";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 const PAYMENT_WALLET = process.env.PAYMENT_WALLET;
 const NETWORK = process.env.X402_NETWORK || "base-sepolia";
