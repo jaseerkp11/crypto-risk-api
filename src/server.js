@@ -39,7 +39,10 @@ app.get("/openapi.json", (_req, res) => {
       title: "Crypto Token Risk API",
       version: "1.0.0",
       description:
-        "Real-time token risk score, whale concentration, and honeypot check"
+        "Real-time token risk score, whale concentration, and honeypot check",
+      contact: {
+        email: "poormyraa@gmail.com"
+      }
     },
     paths: {
       "/api/v1/risk-score": {
