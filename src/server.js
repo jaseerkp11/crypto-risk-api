@@ -61,8 +61,38 @@ app.get("/openapi.json", (_req, res) => {
             }
           ],
           responses: {
-            "200": { description: "Risk score data" },
-            "402": { description: "Payment required" }
+            "200": {
+              "description": "Risk score data",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": { "type": "string" },
+                      "symbol": { "type": ["string", "null"] },
+                      "riskScore": { "type": "number" },
+                      "riskRating": { "type": "string" },
+                      "flags": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "liquidityUsd": { "type": ["number", "null"] },
+                      "volume24hUsd": { "type": ["number", "null"] },
+                      "priceUsd": { "type": ["number", "null"] },
+                      "priceChange24h": { "type": ["number", "null"] },
+                      "holderCount": { "type": ["integer", "null"] },
+                      "top10HolderPct": { "type": ["number", "null"] },
+                      "buyTaxPct": { "type": ["number", "null"] },
+                      "sellTaxPct": { "type": ["number", "null"] },
+                      "lpLocked": { "type": ["boolean", "null"] },
+                      "recommendedMaxSlippage": { "type": "string" },
+                      "timestamp": { "type": "integer" }
+                    }
+                  }
+                }
+              }
+            },
+            "402": { "description": "Payment required" }
           },
           "x-payment-info": {
             protocols: ["x402"],
