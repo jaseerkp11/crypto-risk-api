@@ -29,6 +29,44 @@ app.get("/.well-known/x402", (_req, res) => {
   });
 });
 
+// --- Public OpenAPI spec for x402 discovery ---------------------------------
+// Modern x402 discovery (@agentcash/discovery) reads this spec instead of
+// the legacy /.well-known/x402 JSON document.
+app.get("/openapi.json", (_req, res) => {
+  res.json({
+    openapi: "3.0.0",
+    info: {
+      title: "Crypto Token Risk API",
+      version: "1.0.0",
+      description:
+        "Real-time token risk score, whale concentration, and honeypot check"
+    },
+    paths: {
+      "/api/v1/risk-score": {
+        get: {
+          summary: "Get token risk score",
+          parameters: [
+            {
+              name: "tokenAddress",
+              in: "query",
+              required: true,
+              schema: { type: "string" }
+            }
+          ],
+          responses: {
+            "200": { description: "Risk score data" },
+            "402": { description: "Payment required" }
+          },
+          "x-payment-info": {
+            protocols: ["x402"],
+            price: { mode: "fixed", currency: "USD", amount: "0.002" }
+          }
+        }
+      }
+    }
+  });
+});
+
 // --- Real x402 payment gate -------------------------------------------------
 // This middleware (not a hand-rolled header check) actually:
 //   1. Returns HTTP 402 with signed payment requirements if no payment is attached
