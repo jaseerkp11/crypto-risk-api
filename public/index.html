@@ -52,6 +52,13 @@
     button:hover {
       background: #2563eb;
     }
+    button.secondary {
+      background: #2a2f3a;
+      color: #e6e8eb;
+    }
+    button.secondary:hover {
+      background: #353b48;
+    }
     .note {
       margin-top: 0.75rem;
       font-size: 0.8rem;
@@ -69,6 +76,14 @@
     .card h2 {
       margin: 0 0 0.5rem;
       font-size: 1.1rem;
+    }
+    .card h3 {
+      margin: 0.75rem 0 0.35rem;
+      font-size: 0.95rem;
+      color: #c9cdd4;
+    }
+    .card h3:first-child {
+      margin-top: 0;
     }
     .row {
       display: flex;
@@ -104,6 +119,67 @@
       background: #1a2e1f;
       border-color: #166534;
     }
+    .info {
+      background: #1a2330;
+      border-color: #1d4ed8;
+    }
+    .code {
+      background: #0f1115;
+      border: 1px solid #2a2f3a;
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.8rem;
+      color: #c9cdd4;
+      word-break: break-all;
+      margin-top: 0.5rem;
+    }
+    .section {
+      margin-top: 1.5rem;
+    }
+    .section h2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    ol {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    ol li {
+      margin-bottom: 0.35rem;
+      line-height: 1.5;
+    }
+    a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .example-label {
+      font-size: 0.75rem;
+      color: #9aa3b2;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .api-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #252a33;
+    }
+    .api-row:last-child {
+      border-bottom: none;
+    }
+    .api-method {
+      background: #166534;
+      color: #fff;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -118,12 +194,103 @@
     <p class="note">API cost: $0.002 USDC per request via x402. This demo page is free; the endpoint itself requires payment.</p>
 
     <div id="result"></div>
+
+    <div class="section">
+      <h2>How It Works</h2>
+      <div class="card">
+        <ol>
+          <li>Enter a Base token contract address above.</li>
+          <li>An AI agent or x402 client calls the paid API.</li>
+          <li>x402 handles the $0.002 USDC payment automatically.</li>
+          <li>The API returns the token risk analysis.</li>
+        </ol>
+        <p style="margin-top:0.75rem;color:#9aa3b2;font-size:0.9rem;">
+          The API is designed for agents that need token-risk information before buying, swapping, transferring, or recommending a token.
+        </p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>API</h2>
+      <div class="card">
+        <div class="api-row">
+          <span class="label">Endpoint</span>
+          <span class="value"><span class="api-method">GET</span> /api/v1/risk-score</span>
+        </div>
+        <div class="api-row">
+          <span class="label">Parameter</span>
+          <span class="value">tokenAddress — required Base token contract address</span>
+        </div>
+        <div class="api-row">
+          <span class="label">Price</span>
+          <span class="value">$0.002 USDC per request via x402</span>
+        </div>
+
+        <h3>Example</h3>
+        <div class="code">GET /api/v1/risk-score?tokenAddress=TOKEN_ADDRESS</div>
+
+        <h3>Notes</h3>
+        <p style="margin:0;color:#9aa3b2;font-size:0.9rem;">
+          Normal browser requests receive HTTP 402 because payment is required. Use an x402 client or agent to complete the payment flow.
+        </p>
+
+        <h3>Documentation</h3>
+        <p style="margin:0;font-size:0.9rem;">
+          <a href="/openapi.json" target="_blank">OpenAPI specification (/openapi.json)</a>
+        </p>
+        <p style="margin:0.35rem 0 0;font-size:0.9rem;">
+          <a href="https://www.x402scan.com/server/759444cd-9f4f-4294-9f63-dc6fcb73fbde" target="_blank">x402scan listing</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Example Response</h2>
+      <div class="card">
+        <div class="example-label">Sample output — not live data</div>
+        <div class="code">{
+  "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "symbol": "USDC",
+  "riskScore": 90,
+  "riskRating": "SAFE",
+  "flags": [
+    "Liquidity pool tokens not locked"
+  ],
+  "liquidityUsd": 152676.48,
+  "volume24hUsd": 207728.57,
+  "priceUsd": "1.00016",
+  "priceChange24h": 0.03,
+  "holderCount": 10170126,
+  "top10HolderPct": 0.26,
+  "buyTaxPct": 0,
+  "sellTaxPct": 0,
+  "lpLocked": false,
+  "recommendedMaxSlippage": "0.5%",
+  "timestamp": 1700000000000
+}</div>
+      </div>
+    </div>
   </div>
 
   <script>
     const input = document.getElementById('tokenAddress');
     const btn = document.getElementById('checkBtn');
     const result = document.getElementById('result');
+
+    async function copyCommand() {
+      const address = input.value.trim() || 'TOKEN_ADDRESS';
+      const command = `npx agentcash@latest fetch "https://crypto-risk-api-jw3l.onrender.com/api/v1/risk-score?tokenAddress=${address}" -m GET`;
+      try {
+        await navigator.clipboard.writeText(command);
+        const copyBtn = document.getElementById('copyBtn');
+        if (copyBtn) {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy command'; }, 2000);
+        }
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+    }
 
     btn.addEventListener('click', async () => {
       const address = input.value.trim();
@@ -141,6 +308,9 @@
           result.innerHTML = `
             <div class="card warning">
               <div class="value">This endpoint requires an x402 payment of $0.002 USDC — this demo shows the request format agents use. Try it with AgentCash or another x402 client to see real results.</div>
+              <div class="code" style="margin-top:0.75rem;">npx agentcash@latest fetch "https://crypto-risk-api-jw3l.onrender.com/api/v1/risk-score?tokenAddress=${address}" -m GET</div>
+              <button class="secondary" id="copyBtn" style="margin-top:0.5rem;" onclick="copyCommand()">Copy command</button>
+              <p style="margin-top:0.5rem;color:#9aa3b2;font-size:0.85rem;">AgentCash automatically handles the x402 payment. The endpoint costs $0.002 USDC per request on Base.</p>
             </div>
           `;
           return;
