@@ -185,7 +185,7 @@
 <body>
   <div class="container">
     <h1>Crypto Token Risk Checker</h1>
-    <p class="subtitle">Check a Base token for honeypots, rug-pull risk, and contract security issues.</p>
+    <p class="subtitle">Analyze Base tokens for liquidity, holder concentration, taxes, honeypot signals, and other risk indicators.</p>
 
     <div class="input-group">
       <input type="text" id="tokenAddress" placeholder="0x..." />
@@ -249,24 +249,27 @@
       <div class="card">
         <div class="example-label">Sample output — not live data</div>
         <div class="code">{
-  "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-  "symbol": "USDC",
-  "riskScore": 90,
-  "riskRating": "SAFE",
+  "token": "0xAnonymized",
+  "symbol": "ANON",
+  "riskScore": 45,
+  "riskRating": "HIGH_RISK",
   "flags": [
+    "Owner can mint new supply",
+    "Hidden owner address",
+    "Owner can directly change holder balances",
     "Liquidity pool tokens not locked"
   ],
-  "liquidityUsd": 152676.48,
-  "volume24hUsd": 207728.57,
-  "priceUsd": "1.00016",
-  "priceChange24h": 0.03,
-  "holderCount": 10170126,
-  "top10HolderPct": 0.26,
+  "liquidityUsd": 4702353.97,
+  "volume24hUsd": 211565.06,
+  "priceUsd": "0.7602",
+  "priceChange24h": -4.3,
+  "holderCount": 1021694,
+  "top10HolderPct": 0.46,
   "buyTaxPct": 0,
   "sellTaxPct": 0,
   "lpLocked": false,
   "recommendedMaxSlippage": "0.5%",
-  "timestamp": 1700000000000
+  "timestamp": 1787731948189
 }</div>
       </div>
     </div>
