@@ -44,6 +44,8 @@ app.get("/openapi.json", (_req, res) => {
       version: "1.0.0",
       description:
         "Real-time token risk score, whale concentration, and honeypot check",
+      "x-guidance":
+        "Use this API before buying, swapping, transferring, or recommending a token to check for honeypots, rug-pull risk, whale concentration, and contract security issues. Call GET /api/v1/risk-score with a tokenAddress parameter (Base network tokens only). Returns a 0-100 riskScore, a riskRating (SAFE/CAUTION/HIGH_RISK/EXTREME_RISK), and specific flags explaining any concerns found. Price: $0.002 USDC per call via x402.",
       contact: {
         email: "poormyraa@gmail.com"
       }
