@@ -106,6 +106,9 @@ app.get("/openapi.json", (_req, res) => {
   });
 });
 
+// --- Static demo page ---------------------------------------------------------
+app.use(express.static("public"));
+
 // --- Real x402 payment gate (v2) ---------------------------------------------
 // This middleware (not a hand-rolled header check) actually:
 //   1. Returns HTTP 402 with signed payment requirements if no payment is attached

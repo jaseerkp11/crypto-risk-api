@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Token Risk Checker</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0f1115;
+      color: #e6e8eb;
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .subtitle {
+      color: #9aa3b2;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #2a2f3a;
+      background: #1a1d24;
+      color: #e6e8eb;
+      font-size: 0.95rem;
+    }
+    button {
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .note {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #9aa3b2;
+    }
+    #result {
+      margin-top: 1.25rem;
+    }
+    .card {
+      background: #1a1d24;
+      border: 1px solid #2a2f3a;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .card h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #252a33;
+    }
+    .row:last-child {
+      border-bottom: none;
+    }
+    .label {
+      color: #9aa3b2;
+    }
+    .value {
+      font-weight: 600;
+    }
+    .flags {
+      margin-top: 0.5rem;
+    }
+    .flags ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    .error {
+      background: #3b1f1f;
+      border-color: #7f1d1d;
+    }
+    .warning {
+      background: #3b2f1a;
+      border-color: #7f4d1d;
+    }
+    .success {
+      background: #1a2e1f;
+      border-color: #166534;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Crypto Token Risk Checker</h1>
+    <p class="subtitle">Check a Base token for honeypots, rug-pull risk, and contract security issues.</p>
+
+    <div class="input-group">
+      <input type="text" id="tokenAddress" placeholder="0x..." />
+      <button id="checkBtn">Check Token</button>
+    </div>
+    <p class="note">API cost: $0.002 USDC per request via x402. This demo page is free; the endpoint itself requires payment.</p>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById('tokenAddress');
+    const btn = document.getElementById('checkBtn');
+    const result = document.getElementById('result');
+
+    btn.addEventListener('click', async () => {
+      const address = input.value.trim();
+      if (!address) {
+        result.innerHTML = '<div class="card error"><div class="value">Please enter a token address.</div></div>';
+        return;
+      }
+
+      result.innerHTML = '<div class="card"><div class="value">Checking...</div></div>';
+
+      try {
+        const res = await fetch(`/api/v1/risk-score?tokenAddress=${encodeURIComponent(address)}`);
+
+        if (res.status === 402) {
+          result.innerHTML = `
+            <div class="card warning">
+              <div class="value">This endpoint requires an x402 payment of $0.002 USDC — this demo shows the request format agents use. Try it with AgentCash or another x402 client to see real results.</div>
+            </div>
+          `;
+          return;
+        }
+
+        if (!res.ok) {
+          result.innerHTML = `<div class="card error"><div class="value">Error: ${res.status} ${res.statusText}</div></div>`;
+          return;
+        }
+
+        const data = await res.json();
+        const flagsHtml = data.flags && data.flags.length > 0
+          ? `<div class="flags"><strong>Flags:</strong><ul>${data.flags.map(f => `<li>${f}</li>`).join('')}</ul></div>`
+          : '<div class="flags"><strong>Flags:</strong> None</div>';
+
+        result.innerHTML = `
+          <div class="card success">
+            <h2>${data.symbol || 'Unknown Token'}</h2>
+            <div class="row"><span class="label">Risk Score</span><span class="value">${data.riskScore}/100</span></div>
+            <div class="row"><span class="label">Rating</span><span class="value">${data.riskRating}</span></div>
+            <div class="row"><span class="label">Liquidity (USD)</span><span class="value">${data.liquidityUsd != null ? '$' + data.liquidityUsd.toLocaleString() : 'N/A'}</span></div>
+            <div class="row"><span class="label">Holders</span><span class="value">${data.holderCount != null ? data.holderCount.toLocaleString() : 'N/A'}</span></div>
+            ${flagsHtml}
+          </div>
+        `;
+      } catch (err) {
+        result.innerHTML = `<div class="card error"><div class="value">Network error: ${err.message}</div></div>`;
+      }
+    });
+  </script>
+</body>
+</html>
