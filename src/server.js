@@ -4,6 +4,7 @@ import { paymentMiddleware } from "@x402/express";
 import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { createCdpAuthHeaders } from "@coinbase/x402";
+import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { analyzeToken } from "./riskEngine.js";
 
 dotenv.config();
@@ -145,6 +146,66 @@ app.use(
         description:
           "Real-time token risk score, whale concentration, and honeypot check",
         mimeType: "application/json",
+        extensions: declareDiscoveryExtension({
+          method: "GET",
+          input: { tokenAddress: "string" },
+          inputSchema: {
+            type: "object",
+            properties: {
+              tokenAddress: { type: "string" },
+            },
+            required: ["tokenAddress"],
+          },
+          output: {
+            example: {
+              token: "0xAnonymized",
+              symbol: "ANON",
+              riskScore: 45,
+              riskRating: "HIGH_RISK",
+              flags: [
+                "Owner can mint new supply",
+                "Hidden owner address",
+                "Owner can directly change holder balances",
+                "Liquidity pool tokens not locked",
+              ],
+              liquidityUsd: 4702353.97,
+              volume24hUsd: 211565.06,
+              priceUsd: "0.7602",
+              priceChange24h: -4.3,
+              holderCount: 1021694,
+              top10HolderPct: 0.46,
+              buyTaxPct: 0,
+              sellTaxPct: 0,
+              lpLocked: false,
+              recommendedMaxSlippage: "0.5%",
+              timestamp: 1787731948189,
+            },
+            schema: {
+              type: "object",
+              properties: {
+                token: { type: "string" },
+                symbol: { type: ["string", "null"] },
+                riskScore: { type: "number" },
+                riskRating: { type: "string" },
+                flags: {
+                  type: "array",
+                  items: { type: "string" },
+                },
+                liquidityUsd: { type: ["number", "null"] },
+                volume24hUsd: { type: ["number", "null"] },
+                priceUsd: { type: ["string", "null"] },
+                priceChange24h: { type: ["number", "null"] },
+                holderCount: { type: ["integer", "null"] },
+                top10HolderPct: { type: ["number", "null"] },
+                buyTaxPct: { type: ["number", "null"] },
+                sellTaxPct: { type: ["number", "null"] },
+                lpLocked: { type: ["boolean", "null"] },
+                recommendedMaxSlippage: { type: "string" },
+                timestamp: { type: "integer" },
+              },
+            },
+          },
+        }),
       },
     },
     x402Server
